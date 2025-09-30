@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Notification Center</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <style>
+    :root {
+      --color-bg: #f8f9fa;
+      --color-bg-alt: #eef1f5;
+      --color-surface: #ffffff;
+      --color-surface-border: #e3e7ed;
+      --color-text: #212529;
+      --color-text-muted: #6c757d;
+      --color-accent: #0d6efd;
+      --color-badge-bg: #eef4ff;
+      --color-badge-text: #1d4ed8;
+      --focus-ring: 0 0 0 .25rem rgba(13,110,253,.35);
+      color-scheme: light;
+    }
+    :root[data-theme="dark"] {
+      --color-bg: #0f1115;
+      --color-bg-alt: #161a20;
+      --color-surface: #1f242b;
+      --color-surface-border: #2c333b;
+      --color-text: #e6e8ea;
+      --color-text-muted: #9ca3af;
+      --color-accent: #3b82f6;
+      --color-badge-bg: #1e3a8a;
+      --color-badge-text: #93c5fd;
+      --focus-ring: 0 0 0 .25rem rgba(59,130,246,.4);
+      color-scheme: dark;
+    }
+    body { background: linear-gradient(180deg,var(--color-bg),var(--color-bg-alt)); min-height:100vh; display:flex; flex-direction:column; color: var(--color-text); }
+    main { flex:1 0 auto; }
+    .preferences-card { max-width: 860px; margin: 2.5rem auto; border:1px solid var(--color-surface-border); background: var(--color-surface); }
+    .preferences-card .card-header { background:var(--color-surface); border-bottom:1px solid var(--color-surface-border); }
+  .preferences-card .card-header { position:relative; }
+  .preferences-card .card-header:before { content:""; position:absolute; inset:0; background:linear-gradient(135deg, var(--color-bg-alt) 0%, transparent 60%); opacity:.5; pointer-events:none; border-radius:.375rem .375rem 0 0; }
+  :root[data-theme="dark"] .preferences-card .card-header:before { opacity:.35; }
+  #emailAddress { background:var(--color-surface); border-color: var(--color-surface-border); color: var(--color-text); }
+  #emailAddress:focus { box-shadow: var(--focus-ring); }
+  :root[data-theme="dark"] #emailAddress { background:#242b33; }
+    .form-check-input:focus { box-shadow: var(--focus-ring); }
+    .list-group-item { border:none; border-bottom:1px solid var(--color-surface-border); background:transparent; }
+    .list-group-item:last-child { border-bottom:none; }
+    .visually-hidden-focusable:focus { position: static; width:auto; height:auto; margin:0; overflow:visible; clip:auto; }
+    footer { background:#101828; color:#adb5bd; font-size:.875rem; }
+    :root[data-theme="dark"] footer { background:#0d1117; color:#6b7280; }
+    footer a { color:#d0d5dd; text-decoration:none; }
+    :root[data-theme="dark"] footer a { color:#9ca3af; }
+    footer a:hover { text-decoration:underline; }
+    .badge-soft { background:var(--color-badge-bg); color:var(--color-badge-text); }
+    .fade-scale { animation: fadeScale .35s ease; }
+    .navbar, .dropdown-menu { background: var(--color-surface)!important; }
+    .navbar .nav-link { color: var(--color-text); }
+    .navbar .nav-link.active { color: var(--color-accent); }
+    .theme-toggle-btn { min-width: 46px; }
+    .btn-outline-theme { color: var(--color-text); border-color: var(--color-surface-border); }
+    .btn-outline-theme:hover { background: var(--color-bg-alt); }
+    :root[data-theme="dark"] .btn-outline-theme:hover { background:#1f2933; }
+    .text-muted { color: var(--color-text-muted)!important; }
+    code { background: rgba(0,0,0,0.04); padding:2px 4px; border-radius:4px; }
+    :root[data-theme="dark"] code { background:#28313a; color:#d1d5db; }
+  :root[data-theme="dark"] .tooltip-inner { background:#374151; color:#f3f4f6; }
+  :root[data-theme="dark"] .tooltip-arrow::before { border-top-color:#374151 !important; border-bottom-color:#374151 !important; }
+  /* Light gray text applied to primary headings/labels for consistency */
+  .pref-label-main { color: #5f6368; }
+  :root[data-theme="dark"] .pref-label-main { color: #c0c4c9; }
+  .pref-heading { color: #5f6368; }
+  :root[data-theme="dark"] .pref-heading { color: #c0c4c9; }
+    @keyframes fadeScale { from { opacity:0; transform:translateY(4px) scale(.98);} to { opacity:1; transform:translateY(0) scale(1);} }
+  </style>
+</head>
+<body>
+  <a class="visually-hidden visually-hidden-focusable" href="#pref-form">Skip to form</a>
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="#">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-primary me-2"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7l9-4 9 4-9 4-9-4v6l9 4 9-4V7"/></svg>
+  <span>Front-End Dev Center</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMain">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-lg-2">
+          <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Preferences</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Support</a></li>
+          <li class="nav-item">
+            <button type="button" id="themeToggle" class="btn btn-sm btn-outline-theme ms-lg-3 theme-toggle-btn" aria-pressed="false" aria-label="Toggle dark mode" title="Toggle dark mode">
+              <span id="themeIcon" aria-hidden="true">🌙</span>
+            </button>
+          </li>
+        </ul>
+        <span id="themeStatus" class="visually-hidden" role="status" aria-live="polite"></span>
+      </div>
+    </div>
+  </nav>
+  <main class="container">
+    <div class="card preferences-card shadow-sm fade-scale">
+      <div class="card-header d-flex flex-wrap gap-3 align-items-center justify-content-between">
+        <div>
+          <h1 class="h4 mb-0 pref-heading" id="page-title">Notification Preferences</h1>
+          <p class="small mb-0 pref-heading" id="form-desc">Front-end engineering focused interface showcasing scalable state handling, accessibility-first patterns, and theme-aware UI architecture.</p>
+        </div>
+        <span class="badge rounded-pill badge-soft" id="selectedCount" aria-live="polite">0 Selected</span>
+      </div>
+      <div class="card-body p-4">
+  <form id="pref-form" aria-labelledby="page-title" action="https://www.w3schools.com/action_page.php" method="post" novalidate>
+          <div class="mb-4">
+            <label for="emailAddress" class="form-label pref-label-main fw-semibold mb-1">Notification email (optional)</label>
+            <input type="email" class="form-control" id="emailAddress" name="email" inputmode="email" autocomplete="email" placeholder="name@example.com" aria-describedby="emailHelp" />
+            <div id="emailHelp" class="form-text small">Used only to route the categories you enable below. Leave blank to use your account default.</div>
+          </div>
+          <fieldset class="border-0 p-0 m-0" aria-describedby="form-desc emailHelp">
+            <legend class="visually-hidden">Select which email communications you want to receive</legend>
+
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div class="form-check m-0">
+                <input class="form-check-input" type="checkbox" id="toggle_all" />
+                <label class="form-check-label fw-semibold pref-heading" for="toggle_all" id="toggle_all_label">Select all notification categories</label>
+              </div>
+              <div class="d-flex gap-2">
+                <button type="button" id="clearBtn" class="btn btn-sm btn-outline-danger">Clear All</button>
+              </div>
+            </div>
+
+            <ul class="list-group mb-4" id="prefList">
+              <li class="list-group-item px-0">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="critical_alerts" id="critical_alerts" name="critical_alerts" />
+                  <label class="form-check-label" for="critical_alerts">
+                    <span class="fw-semibold pref-label-main">Critical alerts</span>
+                    <span class="text-muted d-block small">Notifications about the status of your tax return & urgent issues.</span>
+                  </label>
+                </div>
+              </li>
+              <li class="list-group-item px-0">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="special_offers" id="special_offers" name="special_offers" />
+                  <label class="form-check-label" for="special_offers">
+                    <span class="fw-semibold pref-label-main">Special offers</span>
+                    <span class="text-muted d-block small">Occasional promotions and discounts for tax services.</span>
+                  </label>
+                </div>
+              </li>
+              <li class="list-group-item px-0">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="irs_changes" id="irs_changes" name="irs_changes" />
+                  <label class="form-check-label" for="irs_changes">
+                    <span class="fw-semibold pref-label-main">IRS changes & deadlines</span>
+                    <span class="text-muted d-block small">Regulatory updates and important tax filing reminders.</span>
+                  </label>
+                </div>
+              </li>
+              <li class="list-group-item px-0">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="newsletter" id="newsletter" name="newsletter" />
+                  <label class="form-check-label" for="newsletter">
+                    <span class="fw-semibold pref-label-main">Monthly newsletter</span>
+                    <span class="text-muted d-block small">Tax news, optimization tips, and educational content.</span>
+                  </label>
+                </div>
+              </li>
+            </ul>
+          </fieldset>
+
+          <div class="d-flex flex-wrap gap-3 align-items-center">
+            <button type="submit" id="saveBtn" class="btn btn-primary">Save Preferences</button>
+            <button type="button" id="resetBtn" class="btn btn-outline-secondary">Reset</button>
+            <div id="saveStatus" class="visually-hidden" role="status" aria-live="polite"></div>
+          </div>
+        </form>
+
+        <hr class="my-4" />
+        <div class="row gy-3">
+          <div class="col-md-7">
+            <p class="text-muted small mb-0">This artifact highlights front-end engineering strengths: modular state management, interaction design, performance-conscious persistence, and progressive enhancement.</p>
+          </div>
+          <div class="col-md-5">
+            <div class="bg-light rounded-3 p-3 small h-100">
+              <strong class="d-block mb-2">Operational Highlights</strong>
+              <ul class="ps-3 mb-0 small">
+                <li>State durability (local cache) with fallback server POST path</li>
+                <li>Deterministic bulk enable/disable with tri-state controller</li>
+                <li>Debounced write pattern reducing unnecessary I/O</li>
+                <li>Accessible design (WCAG-friendly labels & live regions)</li>
+                <li>Modular functions for maintainability & audit clarity</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
+    <div id="saveToast" class="toast align-items-center text-bg-primary border-0" role="status" aria-live="polite" aria-atomic="true" data-bs-delay="2500">
+      <div class="d-flex">
+        <div class="toast-body" id="toastMsg">Preferences saved.</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="mt-auto py-4">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+  <div>&copy; <span id="yearSpan"></span> Front-End Notification Center</div>
+      <ul class="nav small">
+        <li class="nav-item"><a class="nav-link px-2" href="#">Privacy</a></li>
+        <li class="nav-item"><a class="nav-link px-2" href="#">Terms</a></li>
+        <li class="nav-item"><a class="nav-link px-2" href="#">Security</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <script>
+    (function() {
+  const STORAGE_KEY = 'email_prefs_v3'; // bumped after reverting to original category set
+  const THEME_KEY = 'pref_theme_v1';
+      const checkboxes = Array.from(document.querySelectorAll('#pref-form input[type="checkbox"]'))
+        .filter(cb => cb.id !== 'toggle_all');
+  const master = document.getElementById('toggle_all');
+  const masterLabel = document.getElementById('toggle_all_label');
+  const clearBtn = document.getElementById('clearBtn');
+      const saveBtn = document.getElementById('saveBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const statusEl = document.getElementById('saveStatus');
+      const selectedCountEl = document.getElementById('selectedCount');
+      const toastEl = document.getElementById('saveToast');
+      const toastMsgEl = document.getElementById('toastMsg');
+      const yearSpan = document.getElementById('yearSpan');
+      yearSpan.textContent = new Date().getFullYear();
+      const themeToggleBtn = document.getElementById('themeToggle');
+      const themeIcon = document.getElementById('themeIcon');
+      const themeStatus = document.getElementById('themeStatus');
+
+      // Theme handling
+      function getSystemTheme() {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      function applyTheme(theme, announce = false) {
+        document.documentElement.setAttribute('data-theme', theme);
+        const isDark = theme === 'dark';
+        themeToggleBtn.setAttribute('aria-pressed', String(isDark));
+        themeIcon.textContent = isDark ? '☀️' : '🌙';
+        if (announce) {
+          themeStatus.textContent = isDark ? 'Dark mode enabled' : 'Light mode enabled';
+          setTimeout(() => { themeStatus.textContent = ''; }, 2500);
+        }
+      }
+      function loadTheme() {
+        const saved = localStorage.getItem(THEME_KEY);
+        const theme = saved || getSystemTheme();
+        applyTheme(theme, false);
+      }
+      function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme') || 'light';
+        const next = current === 'dark' ? 'light' : 'dark';
+        localStorage.setItem(THEME_KEY, next);
+        applyTheme(next, true);
+      }
+      themeToggleBtn.addEventListener('click', toggleTheme);
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!localStorage.getItem(THEME_KEY)) { // only auto-update if user hasn't chosen
+          applyTheme(e.matches ? 'dark' : 'light', true);
+        }
+      });
+      let bsToast;
+
+      function load() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) { updateCount(); return; }
+          const data = JSON.parse(raw);
+          checkboxes.forEach(cb => { cb.checked = !!data[cb.value]; });
+          if (data.__email && typeof data.__email === 'string') {
+            const emailInput = document.getElementById('emailAddress');
+            if (emailInput) emailInput.value = data.__email;
+          }
+          syncMaster();
+          updateCount();
+        } catch (e) {
+          console.warn('Failed to load preferences', e);
+        }
+      }
+
+      function gather() {
+        const payload = checkboxes.reduce((acc, cb) => { acc[cb.value] = cb.checked; return acc; }, {});
+        const emailInput = document.getElementById('emailAddress');
+        if (emailInput && emailInput.value.trim()) {
+          payload.__email = emailInput.value.trim();
+        }
+        return payload;
+      }
+
+      function save(showToast = true, message = 'Preferences saved.') {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(gather()));
+          updateCount();
+          if (showToast) triggerToast(message);
+        } catch (e) {
+          triggerToast('Failed to save', true);
+        }
+      }
+
+      function reset() {
+        checkboxes.forEach(cb => { cb.checked = false; });
+        const emailInput = document.getElementById('emailAddress');
+        if (emailInput) emailInput.value = '';
+        save(true, 'Preferences cleared');
+        syncMaster();
+      }
+
+      function triggerToast(msg, isError = false) {
+        toastMsgEl.textContent = msg;
+        toastEl.classList.toggle('text-bg-danger', isError);
+        toastEl.classList.toggle('text-bg-primary', !isError);
+        if (!bsToast) bsToast = bootstrap.Toast.getOrCreateInstance(toastEl);
+        bsToast.show();
+        statusEl.textContent = msg; // screen reader fallback
+      }
+
+      function updateCount() {
+        const count = checkboxes.filter(c => c.checked).length;
+        selectedCountEl.textContent = `${count} Selected`;
+      }
+
+      document.getElementById('pref-form').addEventListener('submit', () => {
+        save();
+      });
+      resetBtn.addEventListener('click', () => { reset(); });
+      if (clearBtn) clearBtn.addEventListener('click', () => { reset(); });
+
+      let changeTimer;
+      checkboxes.forEach(cb => cb.addEventListener('change', () => {
+        clearTimeout(changeTimer);
+        changeTimer = setTimeout(() => save(false), 450);
+        syncMaster();
+        updateCount();
+      }));
+
+      function syncMaster() {
+        const total = checkboxes.length;
+        const checked = checkboxes.filter(c => c.checked).length;
+        if (checked === 0) {
+          master.checked = false;
+          master.indeterminate = false;
+          masterLabel.textContent = 'Select all notification categories';
+        } else if (checked === total) {
+          master.checked = true;
+          master.indeterminate = false;
+          masterLabel.textContent = 'Deselect all notification categories';
+        } else {
+          master.checked = false;
+          master.indeterminate = true;
+          masterLabel.textContent = 'Select remaining notification categories';
+        }
+      }
+
+      master.addEventListener('change', () => {
+        checkboxes.forEach(cb => { cb.checked = master.checked; });
+        master.indeterminate = false;
+        save();
+        updateCount();
+      });
+
+      // Invert functionality removed for a more conservative administrative UX.
+
+  syncMaster();
+  updateCount();
+  loadTheme();
+  load();
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>
